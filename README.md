@@ -1,1 +1,3 @@
-# rocketseat-nodejs-challenge-1
+# NodeJS Challenge 01
+
+NodeJS challenge for Rocketseat course.
