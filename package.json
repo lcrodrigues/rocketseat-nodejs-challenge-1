@@ -2,9 +2,11 @@
   "name": "rocketseat-nodejs-challenge-1",
   "version": "1.0.0",
   "description": "NodeJS challenge for Rocketseat course.",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch src/server.js"
   },
   "repository": {
     "type": "git",
