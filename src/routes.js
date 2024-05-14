@@ -2,7 +2,6 @@ import { randomUUID } from "crypto";
 import { buildRoutePath } from "./utils/build-route-path.js";
 import { Database } from "./database.js";
 
-// TODO: check for title and description in POST and PUT (for POST must have both and for PUT at least one to be a valid edition)
 // TODO: add CSV
 
 const database = new Database();
@@ -12,7 +11,7 @@ export const routes = [
   {
     method: "GET",
     path: buildRoutePath("/tasks"),
-    handler: async (req, res) => {
+    handler: async (_, res) => {
       const tasks = database.select(tableName);
       return res.end(JSON.stringify(tasks));
     },
@@ -22,19 +21,23 @@ export const routes = [
     method: "POST",
     path: buildRoutePath("/tasks"),
     handler: async (req, res) => {
-      const { title, description } = req.body;
+      const { title, description } = req.body ?? {};
 
-      const task = {
-        id: randomUUID(),
-        title,
-        description,
-        completed_at: null,
-        created_at: Date.now(),
-        updated_at: Date.now(),
-      };
+      if (title && description) {
+        const task = {
+          id: randomUUID(),
+          title,
+          description,
+          completed_at: null,
+          created_at: Date.now(),
+          updated_at: Date.now(),
+        };
 
-      database.insert(tableName, task);
-      return res.writeHead(201).end();
+        database.insert(tableName, task);
+        return res.writeHead(201).end();
+      } else {
+        return res.writeHead(400).end();
+      }
     },
   },
 
@@ -42,18 +45,32 @@ export const routes = [
     method: "PUT",
     path: buildRoutePath("/tasks/:id"),
     handler: async (req, res) => {
-      const { id } = req.params;
-      const { title, description } = req.body;
+      const { id } = req.params ?? {};
+      const { title, description } = req.body ?? {};
+      const itemExists = database.itemExists(tableName, id);
 
-      const updatedTask = {
-        title,
-        description,
-        updated_at: Date.now(),
-      };
+      if (!itemExists) {
+        return res.writeHead(404).end("Task not found!");
+      }
 
-      database.update(tableName, id, updatedTask);
+      if (title || description) {
+        let updatedTask = {
+          updated_at: Date.now(),
+        };
 
-      return res.writeHead(204).end();
+        if (title) {
+          updatedTask = { ...updatedTask, title };
+        }
+
+        if (description) {
+          updatedTask = { ...updatedTask, description };
+        }
+
+        database.update(tableName, id, updatedTask);
+        return res.writeHead(204).end();
+      } else {
+        return res.writeHead(400).end();
+      }
     },
   },
 
@@ -62,8 +79,13 @@ export const routes = [
     path: buildRoutePath("/tasks/:id"),
     handler: async (req, res) => {
       const { id } = req.params;
-      database.delete(tableName, id);
+      const itemExists = database.itemExists(tableName, id);
 
+      if (!itemExists) {
+        return res.writeHead(404).end("Task not found!");
+      }
+
+      database.delete(tableName, id);
       return res.writeHead(204).end();
     },
   },
@@ -73,6 +95,12 @@ export const routes = [
     path: buildRoutePath("/tasks/:id/complete"),
     handler: async (req, res) => {
       const { id } = req.params;
+      const itemExists = database.itemExists(tableName, id);
+
+      if (!itemExists) {
+        return res.writeHead(404).end("Task not found!");
+      }
+
       database.update(tableName, id, {
         completed_at: Date.now(),
         updated_at: Date.now(),

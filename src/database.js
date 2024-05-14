@@ -54,4 +54,14 @@ export class Database {
       this.#persist();
     }
   }
+
+  itemExists(table, id) {
+    const index = this.#database[table].findIndex((task) => task.id === id);
+
+    if (index > -1) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
