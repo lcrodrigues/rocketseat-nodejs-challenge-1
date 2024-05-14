@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/lcrodrigues/rocketseat-nodejs-challenge-1/issues"
   },
-  "homepage": "https://github.com/lcrodrigues/rocketseat-nodejs-challenge-1#readme"
+  "homepage": "https://github.com/lcrodrigues/rocketseat-nodejs-challenge-1#readme",
+  "dependencies": {
+    "csv-parse": "^5.5.6"
+  }
 }
