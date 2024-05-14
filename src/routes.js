@@ -1,14 +1,19 @@
 import { randomUUID } from "crypto";
 import { buildRoutePath } from "./utils/build-route-path.js";
-import path from "path";
+import { Database } from "./database.js";
 
-let tasks = [];
+// TODO: check for title and description in POST and PUT (for POST must have both and for PUT at least one to be a valid edition)
+// TODO: add CSV
+
+const database = new Database();
+const tableName = "tasks";
 
 export const routes = [
   {
     method: "GET",
     path: buildRoutePath("/tasks"),
     handler: async (req, res) => {
+      const tasks = database.select(tableName);
       return res.end(JSON.stringify(tasks));
     },
   },
@@ -28,8 +33,7 @@ export const routes = [
         updated_at: Date.now(),
       };
 
-      tasks.push(task);
-
+      database.insert(tableName, task);
       return res.writeHead(201).end();
     },
   },
@@ -39,17 +43,15 @@ export const routes = [
     path: buildRoutePath("/tasks/:id"),
     handler: async (req, res) => {
       const { id } = req.params;
-      const index = tasks.findIndex((item) => item.id === id);
+      const { title, description } = req.body;
 
-      if (index > -1) {
-        const { title, description } = req.body;
-        tasks[index] = {
-          ...tasks[index],
-          title,
-          description,
-          updated_at: Date.now(),
-        };
-      }
+      const updatedTask = {
+        title,
+        description,
+        updated_at: Date.now(),
+      };
+
+      database.update(tableName, id, updatedTask);
 
       return res.writeHead(204).end();
     },
@@ -60,11 +62,7 @@ export const routes = [
     path: buildRoutePath("/tasks/:id"),
     handler: async (req, res) => {
       const { id } = req.params;
-      const index = tasks.findIndex((item) => item.id === id);
-
-      if (index > -1) {
-        tasks.splice(index, 1);
-      }
+      database.delete(tableName, id);
 
       return res.writeHead(204).end();
     },
@@ -75,12 +73,10 @@ export const routes = [
     path: buildRoutePath("/tasks/:id/complete"),
     handler: async (req, res) => {
       const { id } = req.params;
-      const index = tasks.findIndex((item) => item.id === id);
-
-      if (index > -1) {
-        tasks[index].completed_at = Date.now();
-        tasks[index].updated_at = Date.now();
-      }
+      database.update(tableName, id, {
+        completed_at: Date.now(),
+        updated_at: Date.now(),
+      });
 
       return res.writeHead(204).end();
     },
