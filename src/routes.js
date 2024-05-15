@@ -2,8 +2,6 @@ import { randomUUID } from "crypto";
 import { buildRoutePath } from "./utils/build-route-path.js";
 import { Database } from "./database.js";
 
-// TODO: add CSV
-
 const database = new Database();
 const tableName = "tasks";
 
